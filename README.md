@@ -1,4 +1,4 @@
-# trocadores-de-calor-NUT
+# Trocadores de calor (método NUT)
 
 > Descrição
 
