@@ -4,7 +4,7 @@ import math
 
 '''
 @author: Igor Bastos
-@version: 1.1
+@version: 1.2
 '''
 
 def dados(a,b):
@@ -75,6 +75,58 @@ class Trocador:
             return((1-math.exp(-NUT1*(1+R1)))/(1+R1))[0]
         else:
             raise Exception(excep2.format(self.tipo))
+    def TC1053(self,Y,chute_inicial=1):
+        '''P-NUT, Correntes cruzadas, não-misturado. Resultado aproximado, com erros na ordem de 1.0'''
+        R1 = Y[1]
+        def TC1053_P1(NUT1):
+            return (1-math.exp(((NUT1**(0.22))/(R1))*(math.exp(-R1*NUT1**(0.78))-1)))
+        if self.tipo == 'p':
+            NUT1 = Y[0]
+            return TC1053_P1(NUT1)
+        if self.tipo == 'pnut':
+            P1 = Y[0]
+            mod = lambda NUT: TC1053_P1(NUT) - P1
+            return fsolve(mod,chute_inicial)[0]
+        else:
+            raise Exception(excep2.format(self.tipo))
+    def TC1054_2mist(self,Y):
+        '''P-NUT, Correntes cruzadas, fluido 1 não misturado, fluido 2 misturado'''
+        R1 = Y[1]
+        if self.tipo == 'pnut':
+            P1 = Y[1]
+            return (R1**(-1)*math.log(1/(1+R1*math.log(1-P1))))[0]
+        if self.tipo == 'p':
+            NUT1 = Y[1]
+            K = 1-math.exp(-R1*NUT1)
+            return (1-math.exp(-K/R1))
+        else:
+            raise Exception(excep2.format(self.tipo))
+    def TC1054_1mist(self,Y):
+        '''P-NUT, Correntes cruzadas, fluido 1 misturado, fluido 2 não misturado'''
+        R1 = Y[1]
+        if self.tipo == 'pnut':
+            P1 = Y[1]
+            return ((1/R1)*math.log(1/(1+R1*math.log(1-P1))))[0]
+        if self.tipo == 'p':
+            NUT1 = Y[1]
+            K = 1-math.exp(-R1*NUT1)
+            return (1-math.exp(-K/R1))
+        else:
+            raise Exception(excep2.format(self.tipo))
+    def TC1055(self,Y,chute_inicial=1):
+        '''P-NUT, Correntes cruzadas, ambos fluidos misturados'''
+        R1 = Y[1]
+        def TC1055_P1(NUT1):
+            K2 = 1-math.exp(-R1*NUT1)
+            K1 = 1-math.exp(-NUT1)
+            return ((1/K1)+(R1/K2)-(1/NUT1))**(-1)
+        if self.tipo == 'p':
+            NUT1 = Y[0]
+            return TC1055_P1(NUT1)[0]
+        if self.tipo == 'pnut':
+            P1 = Y[0]
+            mod = lambda NUT: TC1055_P1(NUT) - P1
+            return fsolve(mod,chute_inicial)[0]            
     def TEMAE2misturado(self,Y):
         '''P-NUT, TEMA E, 2 passes, misturado'''
         R1 = Y[1]
