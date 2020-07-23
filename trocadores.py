@@ -4,7 +4,7 @@ import math
 
 '''
 @author: Igor Bastos
-@version: 1.2
+@version: 1.3
 '''
 
 def dados(a,b):
@@ -51,6 +51,70 @@ class Trocador:
                 return (NUT/(1+NUT))[0]
             else:
                 raise Exception('Cr não pode ser maior do que 1.0. Valor atual = {}'.format(Cr))
+        else:
+            raise Exception(excep1.format(self.tipo))
+    def TCmfase(self,Y):
+        '''eps-NUT, mudança de fase (válido p/ qualquer geometria onde Cr ~= 0'''
+        Cr = Y[1]
+        if self.tipo == 'nut':
+            eps = Y[0]
+            return (-math.log(1-eps))
+        if self.tipo == 'eps':
+            NUT = Y[0]
+            return (1-math.exp(-NUT))
+        else:
+            raise Exception(excep1.format(self.tipo))
+    def TCcruz_naomist(self,Y,chute_inicial=1):
+        '''eps-NUT, correntes cruzadas (formando ângulo de 90°), ambas correntes não misturadas. Permite especificar um valor para o chute inicial na determinação de NUT = f(eps, Cr). Padrão = 1.0'''
+        Cr = Y[1]
+        def TCcruz_naomist_eps(NUT):
+            return(1-math.exp((1/Cr)*NUT**(0.22)*(math.exp(-Cr*(NUT)**(0.78))-1)))
+        if self.tipo == 'eps':
+            NUT = Y[0]
+            return TCcruz_naomist_eps(NUT)
+        if self.tipo == 'nut':
+            eps = Y[0]
+            mod = lambda NUT: TCcruz_naomist_eps(NUT) - eps
+            return fsolve(mod,chute_inicial)[0]
+        else:
+            raise Exception(excep1.format(self.tipo))
+    def TCcruz_Cmin(self,Y):
+        '''eps-NUT, correntes cruzadas (formando ângulo de 90°), corrente Cmin misturada.'''
+        Cr = Y[1]
+        if self.tipo == 'nut':
+            eps = Y[0]
+            return((-1/Cr)*math.log(1+Cr*math.log(1-eps)))
+        if self.tipo == 'eps':
+            NUT = Y[0]
+            return(1-math.exp(-(1-math.exp(-NUT*Cr))/(Cr)))
+        else:
+            raise Exception(excep1.format(self.tipo))
+    def TCcruz_Cmax(self,Y):
+        '''eps-NUT, correntes cruzadas (formando ângulo de 90°), corrente Cmax misturada.'''
+        Cr = Y[1]
+        if self.tipo == 'nut':
+            eps = Y[0]
+            return(-math.log(1+(1/Cr)*math.log(1-Cr*eps)))
+        if self.tipo == 'eps':
+            NUT = Y[0]
+            return((1-math.exp(-Cr*(1-math.exp(-NUT))))/Cr)
+        else:
+            raise Exception(excep1.format(self.tipo))
+    def TCcruz_mist(self,Y,chute_inicial=1):
+        '''eps-NUT, correntes cruzadas (formando ângulo de 90°), ambas correntes misturadas. Permite especificar um valor para o chute inicial na determinação de NUT = f(eps, Cr). Padrão = 1.0'''
+        Cr = Y[1]
+        def TCcruz_mist_eps(NUT):
+            A = 1/(1-math.exp(-NUT))
+            B = Cr/(1-math.exp(-NUT*Cr))
+            C = 1/NUT
+            return((A+B-C)**(-1))
+        if self.tipo == 'eps':
+            NUT = Y[0]
+            return TCcruz_mist_eps(NUT)[0]
+        if self.tipo == 'nut':
+            eps = Y[0]
+            mod = lambda NUT: TCcruz_mist_eps(NUT) - eps
+            return fsolve(mod,chute_inicial)[0]
         else:
             raise Exception(excep1.format(self.tipo))
     def TC1051(self,Y):
