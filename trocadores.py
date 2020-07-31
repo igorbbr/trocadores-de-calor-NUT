@@ -4,7 +4,7 @@ import math
 
 '''
 @author: Igor Bastos
-@version: 1.3
+@version: 1.4
 '''
 
 def dados(a,b):
@@ -38,9 +38,9 @@ class Trocador:
         if self.tipo == 'nut':
             eps = Y[0]
             if Cr < 1:
-                return ((1)/(1-Cr))*(math.log((1-Cr*eps)/(1-eps)))[0]
+                return ((1)/(1-Cr))*(math.log((1-Cr*eps)/(1-eps)))
             if Cr == 1:
-                return (eps/(1-eps))[0]
+                return (eps/(1-eps))
             else:
                 raise Exception('Cr não pode ser maior do que 1.0. Valor atual = {}'.format(Cr))
         if self.tipo == 'eps':
@@ -122,10 +122,10 @@ class Trocador:
         R1 = Y[1]
         if self.tipo == 'pnut':
             P1 = Y[0]
-            return 1/(1-R1)*math.log((1-R1*P1)/(1-P1))[0]
+            return 1/(1-R1)*math.log((1-R1*P1)/(1-P1))
         if self.tipo == 'p':
             NUT1 = Y[0]
-            return((1-math.exp(-NUT1*(1-R1)))/(1-R1*math.exp(-NUT1*(1-R1))))[0]
+            return((1-math.exp(-NUT1*(1-R1)))/(1-R1*math.exp(-NUT1*(1-R1))))
         else:
             raise Exception(excep2.format(self.tipo))
     def TC1052(self,Y):
@@ -381,7 +381,7 @@ class Trocador:
             lamma = (1+R1**(2)/16)**(1/2)
             B = (pow(A,lamma)+1)/(pow(A,lamma)-1)
             C = (pow(A,(1+lamma)/2))/(lamma-1+(1+lamma)*pow(A,lamma))
-            D = 1+(lamma*pow(A,(1-lamma)/2))/(pow(A,lamma)+1)
+            D = 1+(lamma*pow(A,(lamma-1)/2))/(pow(A,lamma)-1)
             E = np.exp(R1*NUT1/2)
             return (1+R1/4*((1+3*E)/(1+E))+lamma*B-2*lamma*C*D)**(-1)
         if self.tipo == 'p':
